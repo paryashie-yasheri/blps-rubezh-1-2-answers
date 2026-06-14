@@ -23,11 +23,16 @@ jobs:
       - name: Install mermaid-filter
         run: npm install -g mermaid-filter puppeteer
 
+      - name: Configure Puppeteer
+        run: |
+          echo '{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }' > puppeteer-config.json
+
       - name: Build PDF
         run: |
           pandoc README.md -o BLPS-answers.pdf \
             --pdf-engine=xelatex \
             --filter mermaid-filter \
+            -M mermaid-puppeteer-config-file=puppeteer-config.json \
             -V mainfont='DejaVu Sans' \
             -V monofont='DejaVu Sans Mono' \
             -V fontsize=12pt \
