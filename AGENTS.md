@@ -14,6 +14,11 @@
 - Mermaid code blocks in markdown must use standard fenced code: ` ```mermaid `
 - Russian/non-ASCII text in mermaid node labels must be wrapped in double quotes: `A["Текст на русском"]`
 
+## Markdown structure
+
+- Every heading (`#`, `##`, `###`, etc.) must be preceded by a blank line
+- A pre-commit hook (`.githooks/pre-commit`) enforces this automatically — activate it with `git config core.hooksPath .githooks`
+
 ## Typography
 
 - In Russian text, use em-dash `—` instead of double hyphen `--` between words (e.g. "Spring — это фреймворк")
