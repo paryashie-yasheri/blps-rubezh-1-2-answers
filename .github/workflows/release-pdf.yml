@@ -1,0 +1,42 @@
+name: Release PDF
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pandoc & LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex fonts-dejavu-core
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install mermaid-filter
+        run: npm install -g mermaid-filter puppeteer
+
+      - name: Build PDF
+        run: |
+          pandoc README.md -o BLPS-answers.pdf \
+            --pdf-engine=xelatex \
+            --filter mermaid-filter \
+            -V mainfont='DejaVu Sans' \
+            -V monofont='DejaVu Sans Mono' \
+            -V fontsize=12pt \
+            -V geometry:margin=1in
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: BLPS Answers v${{ github.run_number }}
+          files: BLPS-answers.pdf
+          generate_release_notes: true
