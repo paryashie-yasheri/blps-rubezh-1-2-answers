@@ -12,3 +12,14 @@
 
 - Mermaid code blocks in markdown must use standard fenced code: ` ```mermaid `
 - Russian/non-ASCII text in mermaid node labels must be wrapped in double quotes: `A["Текст на русском"]`
+
+## Typography
+
+- In Russian text, use em-dash `—` instead of double hyphen `--` between words (e.g. "Spring — это фреймворк")
+- Do NOT replace `--` inside:
+  - Code blocks ( ` ``` ` )
+  - Mermaid diagrams (e.g. `-->` arrows)
+  - Inline code `` `--flag` ``
+  - URLs and file paths
+  - Command-line arguments (`--option`, `--flag`)
+- If a mass replacement of `--` → `—` is done across the repo, always verify that mermaid diagrams and code blocks are not affected
