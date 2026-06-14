@@ -20,19 +20,50 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install mermaid-filter
-        run: npm install -g mermaid-filter puppeteer
+      - name: Install mermaid CLI
+        run: npm install -g @mermaid-js/mermaid-cli puppeteer
 
       - name: Configure Puppeteer
         run: |
           echo '{ "args": ["--no-sandbox", "--disable-setuid-sandbox"] }' > puppeteer-config.json
 
+      - name: Pre-render mermaid diagrams
+        run: |
+          python3 << 'PYEOF'
+import re, subprocess, os
+
+with open('README.md', 'r') as f:
+    content = f.read()
+
+bt = chr(96)  # backtick
+pattern = bt * 3 + 'mermaid\n(.*?)' + bt * 3
+
+blocks = re.findall(pattern, content, re.DOTALL)
+
+for i, block in enumerate(blocks):
+    with open(f'/tmp/mmd_{i}.mmd', 'w') as f:
+        f.write(block.strip())
+    subprocess.run([
+        'mmdc', '-i', f'/tmp/mmd_{i}.mmd',
+        '-o', f'images/mermaid_{i}.png',
+        '-p', 'puppeteer-config.json',
+        '-w', '800'
+    ], check=True)
+
+def repl(m):
+    idx = blocks.index(m.group(1))
+    return f'![Mermaid diagram](images/mermaid_{idx}.png)'
+
+content = re.sub(pattern, repl, content, flags=re.DOTALL)
+
+with open('README-processed.md', 'w') as f:
+    f.write(content)
+PYEOF
+
       - name: Build PDF
         run: |
-          pandoc README.md -o BLPS-answers.pdf \
+          pandoc README-processed.md -o BLPS-answers.pdf \
             --pdf-engine=xelatex \
-            --filter mermaid-filter \
-            -M mermaid-puppeteer-config-file=puppeteer-config.json \
             -V mainfont='DejaVu Sans' \
             -V monofont='DejaVu Sans Mono' \
             -V fontsize=12pt \
