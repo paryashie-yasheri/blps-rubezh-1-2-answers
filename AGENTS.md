@@ -7,6 +7,7 @@
 - Image references in markdown files must use standard Markdown syntax: `![alt](images/filename.png)`, not Obsidian `![[filename]]` syntax
 - If an Obsidian-style `![[filename]]` reference is found in any markdown file, replace it with the correct `![alt](images/filename.png)` syntax
 - Image filenames with spaces: use `%20` URL encoding in markdown paths (e.g. `images/Pasted%20image%2020260613181945.png`)
+- Every image file in the `images/` folder must be referenced (used) in at least one markdown file; orphaned images should be removed
 
 ## Mermaid diagrams
 
