@@ -16,7 +16,7 @@ jobs:
       - name: Install pandoc & LaTeX
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-xetex fonts-dejavu-core
+          sudo apt-get install -y pandoc texlive-xetex texlive-latex-extra fonts-dejavu-core
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,6 +37,7 @@ jobs:
         run: |
           pandoc README-processed.md -o BLPS-answers.pdf \
             --pdf-engine=xelatex \
+            -H .github/scripts/pdf-header.tex \
             -V mainfont='DejaVu Sans' \
             -V monofont='DejaVu Sans Mono' \
             -V fontsize=12pt \
