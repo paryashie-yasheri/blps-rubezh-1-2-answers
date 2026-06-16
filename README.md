@@ -948,8 +948,50 @@ public void anotherScheduledBar() {...}
 ```
 
 ### Quartz, архитектура, использование, способы конфигурации
-<!-- а почему этого в лекциях нет а на рубежке спрашивают............. -->
-TODO
+
+#### Summary
+- жава либа для скедулинга
+- Де-факто -- индустривальный стандарт для жава-аппок
+- Чаще всего, за Spring @Scheduled и EJB TS тоже "скрывается" Quartz
+- OpenSource
+
+#### Архитектура
+![[Pasted image 20260616174432.png]]
+- Scheduled Factory -- интерфейс фабрики для создания планировщиков
+- Планировщик/Scheduler -- основной интерфейс для взаимодействия с библиотекой
+- Задача/Job -- действие, которое будет выполняться планировщиком
+	- Экземпляры задач создаются с помощью интерфейса `JobDetail`
+- Trigger -- интерфейс для определения расписания выполнения задач
+- Job Store -- интерфейс, реализуемый хранилищами задач
+- Job Listener -- интерфейс, реализуемый классами, которые должны как то реагировать на запуск задачи на исполнение
+- Trigger Listener -- интерфейс, реализуемый классами, которые должны реагировать на срабатывание триггера
+
+#### Триггеры в Quartz
+
+##### SimpleTrigger
+Это простой триггер, правила запуска конфигурируются программно:
+```java
+var e = TriggerBuilder
+	.Create()
+	.WithIdentity("trigger-name", "trigger-group")
+	.ForJob("job-name", "job-group")
+	.WithSimpleSchedule(o => {
+		o.WithRepeatCount(5)
+		.WithInterval(TimeSmap.FromMinutes(5));
+	})
+	.Build();
+```
+
+##### CronTrigger
+Правила запуска конфигурируются с помощью cron expression:
+```java
+var e = TriggerBuilder
+	.Create()
+	.WithIdentity("trigger-name", "trigger-group")
+	.ForJob("job-name", "job-group")
+	.WithCronSchedule("45 23 * * 6")
+	.Build();
+```
 
 ## BPMS и Camunda
 
