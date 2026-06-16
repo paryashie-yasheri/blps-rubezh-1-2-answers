@@ -870,9 +870,65 @@ TODO
 - Файл таймера содержит дополнительный раздел `[Timer]`
 - Список всех запущенных таймеров можно посмотреть с помощью команды `systemctl list-timers`
 
+##### Пример файла `.timer` для таймера реального времени
+```
+[Unit]
+Description=Run foo weekly
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
 ### Планировщики в Jakarta EE и Spring
 
+#### JSE
+`ScheduledExecutorService`:
+```java
+private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
+
+public void startScheduleTask() {
+	final ScheduledFuture<?> taskHandle = scheduler.scheduleAtFixedRate(
+		new Runnable() {
+			try {
+				getDataFromDB();
+			} catch (Exception ex) {
+				ex.printStackTrace()
+			}
+		}, 0, 15, TimeUnit.MINUTES)
+}
+```
+
+#### EJB
+`EJB Timer Services`
+```java
+@Schedules ({
+	@Schedule(dayOfMonth="Last")
+	@Schedule(dayOfWeek="Fri", hour="23")
+})
+public static void pereodicFoo() {...}
+```
+
+#### Spring
+`@Scheduled`
+
+##### Фиксированное время запуска:
+```java
+@Sheduled(fixedRate=1000)
+public void scheduleFixedRateTask() {....}
+```
+
+##### Запуск по cron
+```java
+@Scheduled(cron = "0 15 10 15 * ?")
+public void anotherScheduledBar() {...}
+```
+
 ### Quartz, архитектура, использование, способы конфигурации
+<!-- а почему этого в лекциях нет а на рубежке спрашивают............. -->
 
 ## BPMS и Camunda
 
