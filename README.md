@@ -696,7 +696,7 @@ TODO
 ## JMS и Jakarta Messaging
 
 ### Архитектура JMS
-![[Pasted image 20260616141851.png]]
+![Архитектура JMS](images/Pasted%20image%2020260616141851.png)
 
 ### Ресурсы и сообщения в JMS
 TODO
@@ -725,10 +725,10 @@ TODO
 #### Архитектура
 
 ##### AMQ Classic
-![[Pasted image 20260616142740.png]]
+![AMQ Classic](images/Pasted%20image%2020260616142740.png)
 
 ##### AMQ Artemis
-![[Pasted image 20260616142812.png]]
+![AMQ Artemis](images/Pasted%20image%2020260616142812.png)
 
 ### RabbitMQ. Что это. Архитектура. Область применения. Преимущества и недостатки.
 
@@ -745,7 +745,7 @@ TODO
 - Более легковесный в сравнении с ActiveMQ
 
 #### Архитектура
-![[Просмотр 2026-06-16 14.29.54.png]]
+![Архитектура Kafka](images/Kafka%20architecture.png)
 
 #### Преимущества и недостатки.
 TODO
@@ -763,7 +763,7 @@ TODO
 - Не поддерживает JMS
 
 #### Архитектура
-![[Pasted image 20260616143249.png]]
+![Архитектура Kafka](images/Pasted%20image%2020260616143249.png)
 
 #### Преимущества и недостатки.
 TODO
@@ -929,6 +929,7 @@ public void anotherScheduledBar() {...}
 
 ### Quartz, архитектура, использование, способы конфигурации
 <!-- а почему этого в лекциях нет а на рубежке спрашивают............. -->
+TODO
 
 ## BPMS и Camunda
 
