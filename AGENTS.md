@@ -9,6 +9,12 @@
 - Image filenames with spaces: use `%20` URL encoding in markdown paths (e.g. `images/Pasted%20image%2020260613181945.png`)
 - Every image file in the `images/` folder must be referenced (used) in at least one markdown file; orphaned images should be removed
 
+## Markdown comments
+
+- Obsidian-style comments (`%% comment %%`) are NOT standard Markdown and will render as visible text on GitHub
+- Replace them with HTML comments: `<!-- comment -->`
+- If an Obsidian `%% ... %%` comment is found in any markdown file, convert it to `<!-- ... -->`
+
 ## Mermaid diagrams
 
 - Mermaid code blocks in markdown must use standard fenced code: ` ```mermaid `
