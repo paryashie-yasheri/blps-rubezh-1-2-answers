@@ -101,7 +101,9 @@ A --> D["Логические операторы"]
 - Задания
 - Подпроцессы
 - Могут содержать маркеры
+
 ![Маркеры действий BPMN](images/Pasted%20image%2020260613183103.png)
+
 ![Типы действий BPMN](images/Pasted%20image%2020260613183115.png)
 
 ### Основные элементы
@@ -426,6 +428,7 @@ UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
 #### Цепочные вызовы
 
 ![Цепочка фильтров Spring Security](images/Pasted%20image%2020260614150200.png)
+
 Запрос, проходя по цепочке фильтров, отлавливается фильтром, нас троенный на аутентификацию запросов на определенный URL с определенным типом запроса
 Данный фильтр создает объект типа Authentication и направляет его в AuthenticationManager
 - ProviderManager является дефолтной реализацией AuthenticationManager
@@ -1033,7 +1036,9 @@ var e = TriggerBuilder
 
 ### Camunda BPMN: из чего состоит, особенности и возможности
 
-####
+#### Архитектура
+
+![Архитектура BPMS](images/Pasted%20image%2020260616181331.png)
 
 ### Camunda: стадии разработки в разработке приложений используя BPMS
 
