@@ -564,6 +564,8 @@ Security Assertion Markup Language — протокол реализации SSO
 	- API, предоставляющий данные, к которым требуется доступ
 ![OAuth 2.0 схема](images/Pasted%20image%2020260614185545.png)
 
+---
+
 # Второй рубеж
 
 ## Асинхронная обработка и обмен сообщениями
@@ -642,8 +644,8 @@ Security Assertion Markup Language — протокол реализации SSO
 	- `close` connection
 
 ###### Клиенты
-Самый популярный — RabbitMQ AMQP Client Library
-Есть поддержка в SB (на базе RMQ Client)
+- Самый популярный — RabbitMQ AMQP Client Library
+- Есть поддержка в SB (на базе RMQ Client)
 
 ###### Преимущества
 - Мощнее, чем MQTT
@@ -657,7 +659,7 @@ Security Assertion Markup Language — протокол реализации SSO
 - Небогатый выбор библиотек и API
 
 ##### Streaming Text Oriented Messaging Protocol
-> a.k.a. `Stomp`
+> a.k.a. `STOMP`
 
 ###### Summary
 - Text protocol
@@ -714,7 +716,30 @@ Security Assertion Markup Language — протокол реализации SSO
 - Предназначен для IM — "забивание гвоздей микроскопом"
 
 ### Модели доставки сообщений в Java Mail Service
-TODO
+
+#### Синхронная модель (Synchronous)
+
+Классический подход в JavaMail API. Вызов метода отправки блокирует текущий поток, пока не завершится сетевое взаимодействие и почтовый SMTP-сервер не примет сообщение. 
+
+- **Как работает:** Вы вызываете метод `Transport.send()`. Программа ожидает ответа сервера и сразу выбрасывает `MessagingException`, если соединение разорвано или произошла ошибка аутентификации.
+- **Плюсы:** Простота реализации, понятный контроль ошибок.
+- **Минусы:** Блокирует основной поток. Если SMTP-сервер отвечает медленно, это сильно снижает производительность приложения.
+
+#### Асинхронная модель (Asynchronous)
+Позволяет приложению отправить сообщение в фоновом потоке и не дожидаться ответа от сервера.
+
+- **Как работает:**
+    - **Простой подход:** Вызов почтовой сессии в отдельном потоке (через `ExecutorService` или механизм `CompletableFuture`).
+    - **Enterprise-подход (Java EE / Jakarta EE):** Использование EJB с аннотацией `@Asynchronous`. Метод `sendMessage` сразу возвращает управление, а контейнер отправляет письмо в фоне. [[1](https://github.com/bbottema/simple-java-mail/issues/198), [2](https://docs.oracle.com/javaee/6/tutorial/doc/gkiez.html)]
+- **Плюсы:** Высокая производительность и неотзывчивость пользовательского интерфейса/основного процесса.
+- **Минусы:** Требует реализации механизма повторных попыток (Retry), так как ошибка отправки произойдет вне вашего контроля.
+
+#### Гарантированная/Транзакционная модель (через JMS и очереди)
+
+Наиболее надежный паттерн для корпоративных приложений. Email отправляется не напрямую через SMTP, а помещается в очередь сообщений.
+
+- **Как работает:** Сообщение формируется и отправляется в очередь JMS (например, ActiveMQ, RabbitMQ). `Message-Driven Bean (MDB)` или фоновый сервис-потребитель вычитывает сообщение из очереди и отправляет его адресату по протоколу SMTP.
+- **Плюсы:** Обеспечивает гарантию доставки «как минимум один раз». Если почтовый сервер временно недоступен, сообщение останется в очереди, а транзакция будет успешной
 
 ## JMS и Jakarta Messaging
 
@@ -722,13 +747,68 @@ TODO
 ![Архитектура JMS](images/Pasted%20image%2020260616141851.png)
 
 ### Ресурсы и сообщения в JMS
-TODO
+1. JMS Ресурсы (Resources)
+
+Ресурсы JMS — это инфраструктурные объекты и компоненты конфигурации, управляемые сервером приложений (например, брокером сообщений), которые нужны для установления связи и обработки. [[1](https://www.ibm.com/docs/ru/mfci/7.6.2?topic=server-creating-jms-modules), [2](https://docs.greendata.ru/platform/ru/message-queue-system-integration.html)]
+
+- **ConnectionFactory (Фабрика соединений):** Объект, используемый клиентом для создания соединения с провайдером JMS. Он инкапсулирует параметры конфигурации соединения (например, URL брокера).
+- **Destination (Назначение):** Адрес, куда отправляются и откуда читаются сообщения. Делится на два типа паттернов обмена:
+    - **Queue (Очередь):** Модель _Point-to-Point (PTP)_. Сообщение гарантированно доставляется **одному** получателю.
+    - **Topic (Тема):** Модель _Publish/Subscribe_. Сообщение доставляется **всем** подписанным на данную тему получателям. [[1](https://www.youtube.com/watch?v=gwEciQ8vMjo), [2](https://intuit.ru/studies/courses/633/489/lecture/11092?page=2)]
+- **MessageProducer (Отправитель):** Объект, создаваемый сессией для отправки сообщений в заданный `Destination`.
+- **MessageConsumer (Получатель):** Объект, создаваемый сессией для получения сообщений из `Destination` (может работать синхронно через метод `receive()` или асинхронно через слушатель `MessageListener`). [[1](https://intuit.ru/studies/courses/633/489/lecture/11092?page=2), [2](https://javarush.com/quests/lectures/questspring.level06.lecture04)]
+- **JMSContext / Session (Контекст / Сессия):** Однопоточный контекст для создания производителей, потребителей и самих сообщений, а также управления транзакциями.
+
+2. JMS Сообщения (Messages)
+
+Сообщение JMS — это объект, состоящий из трех основных частей:
+
+1. **Header (Заголовок):** Метаданные, используемые провайдером для маршрутизации и идентификации сообщений (например: `JMSDestination`, `JMSDeliveryMode`, `JMSExpiration`, `JMSPriority`).
+2. **Properties (Свойства):** Дополнительные параметры (пользовательские или стандартные), которые можно использовать для фильтрации сообщений (селекторов).
+3. **Body (Тело):** Полезная нагрузка сообщения. В зависимости от типа данных, JMS предоставляет 5 подклассов тела:
+    - `TextMessage` — для передачи строк (String, например, JSON/XML).
+    - `MapMessage` — содержит пары ключ-значение.
+    - `BytesMessage` — массив неинтерпретированных байт (идеально для файлов).
+    - `StreamMessage` — поток примитивных типов данных Java.
+    - `ObjectMessage` — сериализованный Java-объект.
 
 ### Распределенная обработка в JMS
-TODO
+
+Основные механизмы
+
+1. **Модели обмена сообщениями:**
+    - **Point-to-Point (очередь):** Одно сообщение обрабатывается ровно одним получателем.
+    - **Publish-Subscribe (топик):** Сообщение доставляется всем подписанным получателям. [[1](https://ru.linkedin.com/pulse/message-oriented-middle-ware-jms-database-programming-xmljson?tl=ru)]
+2. **Гарантия доставки:** В отличие от HTTP-запросов, брокер сохраняет сообщение, пока получатель его не обработает, что защищает от потери данных при падениях сервисов. [[1](https://www.linkedin.com/pulse/reliable-jms-transactions-atomikos)]
+3. **Локальные транзакции (Local Transactions):** Обеспечивают атомарность отправки/получения в рамках одной сессии JMS-провайдера (например, Apache ActiveMQ, IBM MQ, Yawa). [[1](https://docs.oracle.com/cd/E19798-01/821-1841/bncgs/index.html), [2](https://www.h2kinfosys.com/blog/what-is-jms-transaction/), [3](https://ru.linkedin.com/pulse/message-oriented-middle-ware-jms-database-programming-xmljson?tl=ru)]
 
 ### Методы отправки сообщений JMS (подписка/очередь)
-TODO
+
+1. Базовые методы `send()`
+
+Используются для отправки с настройками брокера по умолчанию (срок жизни сообщения, приоритет и режим доставки): [[1](https://javarush.com/quests/lectures/questspring.level06.lecture02)]
+
+- `send(Message message)` — отправляет сообщение в пункт назначения (очередь или тему) с настройками по умолчанию.
+- `send(Destination destination, Message message)` — отправляет сообщение по явно указанному адресу.
+
+2. Расширенные методы с параметрами QoS
+
+Позволяют управлять качеством обслуживания на лету (задаются при вызове метода): [[1](https://javarush.com/quests/lectures/questspring.level06.lecture02)]
+
+- `send(Message message, int deliveryMode, int priority, long timeToLive)`
+- `send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive)`
+
+Где параметры означают:
+
+- **deliveryMode**: Режим доставки сообщения. Может быть `DeliveryMode.PERSISTENT` (сохраняется на диске при сбое) или `DeliveryMode.NON_PERSISTENT` (теряется при перезапуске брокера).
+- **priority**: Приоритет сообщения (от 0 до 9, где 9 — наивысший).
+- **timeToLive**: Время жизни сообщения в миллисекундах. Если оно не будет доставлено за это время, брокер удалит его автоматически.
+
+3. Отправка в стиле JMS 2.0 (Fluent API)
+
+В современном JMS 2.0 (JMSContext) методы отправки объединены в класс `JMSProducer` и поддерживают цепочный вызов (fluent-стиль): [[1](https://learn.microsoft.com/ru-ru/azure/service-bus-messaging/java-message-service-20-entities)]
+
+- `context.createProducer().setPriority(5).setTimeToLive(10000).send(destination, message)`
 
 ## Системы асинхронного выполнения задач
 
